@@ -2,10 +2,8 @@
 
 
 ### Getting Started:
-1. **To run the Backend Applications**
-    ```
-	cd server
-    ```
+1. **To run the python scripts**
+   
     ```
 	python3 -m venv myenv  
     ```

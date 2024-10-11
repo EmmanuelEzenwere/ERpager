@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import os
 from IPython.display import display
+from sqlalchemy import create_engine
+import sqlite3
 
 
 def load_data(messages_filepath, categories_filepath):
@@ -13,7 +15,8 @@ def load_data(messages_filepath, categories_filepath):
         categories_filepath (_type_): _description_
         
     Returns:
-        combined_df (_type_): concatenated df containing both mssg_df and cat_df
+        combined_df (_type_): concatenated df containing both mssg_df and 
+        cat_df
     """
     mssg_df = pd.read_csv(messages_filepath)
     cat_df = pd.read_csv(categories_filepath)
@@ -36,7 +39,8 @@ def clean_data(df):
     print("\nBegining Data Cleaning")
     print("-"*100)
     print("\nInitial Combined Dataset (First Five Rows): \n", df.head(5))
-    print(f"\nInitial Combined Dataset Data Frame dimensions: rows : {df.shape[0]}, col : {df.shape[1]}")
+    print(f"\nInitial Combined Dataset Data Frame dimensions: rows : "
+          f"{df.shape[0]}, col : {df.shape[1]}")
 
     # Get the df excluding the categories column.
     non_categories_columns = df.drop(columns="categories")
@@ -46,60 +50,69 @@ def clean_data(df):
     categories_labels = [col_name[:-2] for col_name in categories_labels]
     categories_columns = df.categories.str.split(";", expand=True)
     categories_columns.columns = categories_labels
-    
-    print("\nFeature Extraction from Message Column and Data type conversion, convert category values to binary indicators .................")
+    print("\nFeature Extraction from Message Column and Data type conversion,"
+          "convert category values to binary indicators .................")
 
     # Convert category values to binary indicators (1 or 0)
     for col_name in categories_labels:
+        # replace categories column values with the binary value at the end of 
+        # the text value.
         categories_columns[col_name] = categories_columns[col_name].str[-1]
-        
         # Data type conversion: convert column values from string to 
         # numeric type, float
         categories_columns[col_name] = categories_columns[col_name].astype(float)
-    
-    # Concatenate the new categories columns, with the rest of the non-categories 
-    # data frame.
+
+    # Concatenate the new categories columns, with the rest of the 
+    # non-categories data frame.
     transformed_df = pd.concat([non_categories_columns, categories_columns], axis=1)
     print("\nTransformed Dataset (First Five Rows): \n", transformed_df.head(5))
-    print(f"\nTransformed Dataset Data Frame dimensions: row : {transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
+    print(f"\nTransformed Dataset Data Frame dimensions: row :"
+          f" {transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
 
-    print(f"\nFinding duplicate rows, number of duplicate rows : {transformed_df.duplicated().sum()}")
+    print(f"\nFinding duplicate rows, number of duplicate rows : "
+          f"{transformed_df.duplicated().sum()}")
     # Remove Duplicates
     transformed_df.drop_duplicates(inplace=True)
-    print(f"\nDropped duplicate rows, Data Frame dimensions: row : {transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
-    
-    print("\nData cleaning completed, Transformed Dataset (First Five Rows) : \n", transformed_df.head(5))
-    print(f"\nCleaned Dataset Data Frame dimensions: rows : {transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
-    print(f"Initial Combined Dataset Data Frame dimensions: rows : {df.shape[0]}, col : {df.shape[1]}\n")
+    print(f"\nDropped duplicate rows, Data Frame dimensions: row :"
+          f"{transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
+    print("\nData cleaning completed, Transformed Dataset (First Five Rows) :"
+          "\n", transformed_df.head(5))
+    print(f"Initial Combined Dataset Data Frame dimensions: rows : "
+          f"{df.shape[0]}, col : {df.shape[1]}\n")
+    print(f"\nCleaned Dataset Data Frame dimensions: rows : "
+          f"{transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
     
     return transformed_df
 
 
-def save_data(df, database_filename):
-    # Create a Mysql database with a table for the cleaned data.
-    
-    # Steps as I understand the process. 
-    
-    # Create a mysql object of the database. This object will be empty until loading/ populating.
-    
-    # Use the Sqlalchemy client to log into the database using log in details and 
-    # an id to the database.
-    
-    # perhaps close the connections?
-    
-    pd.to_sql(df)
-    return print("Not Saved")
+def save_data(data_frame, database_path):
+    """_summary_
+
+    Args:
+        df (Pandas Data Frame): Pandas Data Frame containing cleaned data
+                                to be loaded into the database.
+        database_path (String): relative path to where the sqllite database
+                                should be saved. eg DisasterTweets.db
+
+    Returns:
+        _type_: _description_
+    """
+    # Create a Sqlite database with a table for the Cleaned Data.
+    engine = create_engine("sqlite:///"+database_path)
+    data_frame.to_sql("CleanData", engine, index=False)
+    return print("Saved")
 
 
 def main():
     if len(sys.argv) == 4:
-
+        # fetch file paths for messages, categories and database from the 
+        # command line arguments supplied when running process_data.py
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
               .format(messages_filepath, categories_filepath))
         df = load_data(messages_filepath, categories_filepath)
-        print(df)
+        
         print('Cleaning data...')
         df = clean_data(df)
         
@@ -116,14 +129,11 @@ def main():
               'disaster_messages.csv disaster_categories.csv '\
               'DisasterResponse.db')
 
-mssg_path = "disaster_messages.csv"
-cat_path = "disaster_categories.csv"
-db_path = "DisasterResponse.db"
-df = load_data(mssg_path, cat_path)
-cleaned_df = clean_data(df)
+# mssg_path = "disaster_messages.csv"
+# categories_path = "disaster_categories.csv"
+# db_path = "DisasterResponse.db"
+# df = load_data(mssg_path, categories_path)
+# cleaned_df = clean_data(df)
+# save_data(cleaned_df, "CleanData")
 if __name__ == '__main__':
-    mssg_path = "disaster_messages.csv"
-    cat_path = "disaster_categories.csv"
-    db_path = "DisasterResponse.db"
-    df = load_data(mssg_path, cat_path)
-    # main()
+    main()
