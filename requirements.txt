@@ -1,0 +1,11 @@
+nltk
+scikit-learn
+numpy
+pandas
+matplotlib
+plotly
+sqlalchemy
+beautifulsoup4
+flask
+requests
+IPython
