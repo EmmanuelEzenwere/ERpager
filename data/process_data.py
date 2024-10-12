@@ -97,7 +97,7 @@ def save_data(data_frame, database_path):
     Returns:
         _type_: _description_
     """
-    # Create a Sqlite database with a table for the Cleaned Data.
+    # Create an Sqlite database with a table for the Cleaned Data.
     engine = create_engine("sqlite:///"+database_path)
     data_frame.to_sql("CleanData", engine, index=False)
     return print("Saved")
