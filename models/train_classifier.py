@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTranformer
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import RandomForestClassifier
@@ -26,12 +26,20 @@ def load_data(database_filepath):
         database file
     
     Returns:
-        Pandas Data Frame: A pandas dataframe of the cleaned data 
+        X (Pandas Data Frame): A pandas dataframe of the cleaned data 
         from the sqlite database.
+        Y ():
+        category_names ():
     """
+    # Create a database connection using SQLAlchemy
     engine = create_engine("sqlite:///"+database_filepath)
-    data_frame = pd.read_sql("CleanData", engine)
-    return data_frame
+    # Read the table into a data frame
+    data_frame = pd.read_sql_table(table_name="CleanData", con=engine)
+    # print("\n",list(data_frame.columns),"\n")
+    x = data_frame["message"]
+    y = data_frame.iloc[:, 4:]
+    category_names = data_frame.columns[4:]
+    return x, y, category_names
 
 
 def tokenize(text):
@@ -39,16 +47,20 @@ def tokenize(text):
 
     Args:
         text (_type_): _description_
-
+ddd
     Returns:
         _type_: _description_
     """
+    cleaned_text = re.sub(r"[\W]", " ", text.lower())
+    cleaned_text = cleaned_text.split(" ")
+    print(cleaned_text)
     return word_tokenize(text)
 
 
 def build_model():
     """_summary_
     """
+    
     return None
 
 
@@ -82,7 +94,6 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        print(X, Y)
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
         
         print('Building model...')
