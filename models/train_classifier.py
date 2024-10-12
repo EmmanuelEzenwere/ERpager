@@ -51,18 +51,24 @@ ddd
     Returns:
         _type_: _description_
     """
-    cleaned_text = re.sub(r"[\W]", " ", text.lower())
-    cleaned_text = cleaned_text.split(" ")
-    print(cleaned_text)
-    return word_tokenize(text)
+    # Text Normalization: Convert text to lower case, remove special characters
+    # and remove leading and trailing white space characters from the text.
+    cleaned_text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower()).strip(" ")
+
+    return word_tokenize(cleaned_text)
 
 
 def build_model():
     """_summary_
     """
-    
-    return None
+    # Define the pipeline steps.
+    pipe = Pipeline()
+    return pipeline
 
+    # Fit the pipeline to the training data.
+    
+    
+    # Predict using the pipeline.
 
 def evaluate_model(model, X_test, Y_test, category_names):
     """_summary_
