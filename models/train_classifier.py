@@ -1,8 +1,10 @@
 import sys
 import re
 import math
+
 import numpy as np
 import pandas as pd
+
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
@@ -10,11 +12,26 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+
 import nltk
+
+# Download the stopwords
+nltk.download('stopwords')
+
+# Download the Punkt tokenizer model
+nltk.download('punkt')
+
+# Download the WordNet model
+nltk.download('wordnet')
+
+from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+stop_words = set(stopwords.words("english"))
+
 from sqlalchemy import create_engine
 
+print(stop_words)
 
 def load_data(database_filepath):
     """
@@ -42,20 +59,32 @@ def load_data(database_filepath):
     return x, y, category_names
 
 
-def tokenize(text):
-    """_summary_
-
+def tokenize(text, stop_words=None):
+    """tokenize a text by normalizing, lemmatizing and removing stop words.
     Args:
-        text (_type_): _description_
-ddd
-    Returns:
-        _type_: _description_
-    """
-    # Text Normalization: Convert text to lower case, remove special characters
-    # and remove leading and trailing white space characters from the text.
-    cleaned_text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower()).strip(" ")
+        text (list): list of strings
+        stop_words (set): a set of word strings for stop words.
 
-    return word_tokenize(cleaned_text)
+    Returns:
+        list: list of token strings.
+    """
+    if stop_words is None:
+        stop_words = set(stopwords.words("english"))
+    
+    lemmatizer = WordNetLemmatizer()    
+    
+    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    # Replace URLs with a placeholder and normalize case.
+    normalized_text = re.sub(url_regex, ' ', text.lower())
+
+    # Replace non-alphanumeric characters with spaces.
+    normalized_text = re.sub(r'[^a-zA-Z0-9]', ' ', normalized_text)
+    
+    tokens = word_tokenize(normalized_text)
+    
+    tokens = [lemmatizer.lemmatize(token) for token in tokens if token not in stop_words]
+    
+    return tokens
 
 
 def build_model():
