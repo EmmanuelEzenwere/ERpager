@@ -1,11 +1,10 @@
 import sys
 import re
-import math
+import sklearn
 
 import numpy as np
 import pandas as pd
 
-import sklearn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -157,7 +156,14 @@ if __name__ == '__main__':
 
 
 
-
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+def display_results(y_test, y_pred):
+    labels = np.unique(y_pred)
+    confusion_mat = confusion_matrix(y_test, y_pred, labels=labels)
+    accuracy = (y_pred == y_test).mean()
+    print("Labels:", labels)
+    print("Confusion Matrix:\n", confusion_mat)
+    print("Accuracy:", accuracy)
 
 
 # def load_data():
