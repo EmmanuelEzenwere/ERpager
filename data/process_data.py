@@ -1,10 +1,6 @@
 import sys
 import pandas as pd
-import numpy as np
-import os
-from IPython.display import display
 from sqlalchemy import create_engine
-import sqlite3
 
 
 def load_data(messages_filepath, categories_filepath):
