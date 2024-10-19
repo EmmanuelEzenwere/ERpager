@@ -61,6 +61,74 @@ if __name__ == '__main__':
     unittest.main()
     
     
+    
+    
 print(tokenize('There.'))
 print(WordNetLemmatizer().lemmatize('there'))
 'there' in set(stopwords.words("english"))
+
+
+
+
+def display_dataset(X_train, y_train, X_test=None, y_test=None):
+    """
+    """
+    print("unique Y values: ", np.unique(Y))
+    print("training set, X: ", X_train.shape)
+    if X_test is not None:
+        print("test set, X: ",X_test.shape)
+    print("training set, Y: ",y_train.shape)
+    if y_test is not None:
+        print("test set, Y: ",y_test.shape)
+        
+def data_type_check(X1, X2):
+    """
+    """
+    # check data types of 
+    print("X1 shape: ", X1.shape)
+    print("X2 shape: ", X2.shape)
+    print("X1 Type: ", type(X1))
+    print("X2 Type: ",type(X2)) 
+    
+    
+text = 'What can I do?'
+tokens = tokenize(text)
+print(tokens)
+for token in word_tokenize(text.lower()):
+    print(WordNetLemmatizer().lemmatize(token))
+    print(f'{token}, {token in set(stopwords.words("english"))}')
+    
+    
+
+# print(accuracy(y_test, y_pred))
+
+# # Now you can generate the classification report
+# for col_index in range(0,y_test.shape[1]):
+#     report = classification_report(y_test[:,col_index], y_pred[:, col_index], zero_division=0)
+#     print(classes[col_index])
+#     print(report)
+
+
+
+
+
+
+
+
+#Testing Tokenize Function - Use this to test the output of the tokenize function.
+
+text1 = "Barclaysjbki CEO stresses the importance of regulatory and cultural reform in financial services at Brussels conference  https://www.google.com"
+print(f'input text: "{text1}"\n')
+print(f"text tokens: {tokenize(text1)} \n")
+text2 = "The No. 8 Northeast Gale or storm signal was issued at 5.55pm yesterday (September 14) and was replaced by Southeast gale and storm signal at 12.35am today (September 15)."
+print(f'input text: "{text2}" \n')
+print(f"text tokens: {tokenize(text2)} \n")
+sentence_list = sent_tokenize(text2)
+print(f"sentences: {sentence_list} \n")
+print("testing sentence tokenization...")
+for text in sentence_list:
+    print(f'\ntext: "{text}"')
+    print(f"\ntext tokens: {tokenize(text)}")
+    
+    
+    
