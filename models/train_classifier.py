@@ -162,7 +162,8 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
             
             # If no sentences were found in the entire text.
             self.run_count += 1
-            print(f"Empty Text ({self.run_count}): ", sentence_list)
+            print(f"Non-Text first word({self.run_count}): ", sentence_list)
+            print("Default Tag: 0\n")
             tag = 0
             return tag
         
