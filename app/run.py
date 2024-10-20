@@ -1,15 +1,26 @@
+import sys
+import os
+
+
 import json
 import plotly
+import joblib
+
 import pandas as pd
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+from plotly.graph_objs import Bar, Scatter
 from sqlalchemy import create_engine
+
+
+# Set up project path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, PROJECT_ROOT)
+
+from models.train_classifier import StartingVerbExtractor
 
 
 app = Flask(__name__)
@@ -26,11 +37,11 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///data/DisasterTweets.db')
+df = pd.read_sql_table('cleandata', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("./models/train_classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -43,12 +54,50 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    print("genre:", genre_counts, genre_names)
+    
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
                 Bar(
+                    x=genre_names,
+                    y=genre_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Genres',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=genre_names,
+                    y=genre_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Genres',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Scatter(
                     x=genre_names,
                     y=genre_counts
                 )
@@ -79,7 +128,7 @@ def index():
 def go():
     # save user input in query
     query = request.args.get('query', '') 
-
+    print(query)
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
     classification_results = dict(zip(df.columns[4:], classification_labels))

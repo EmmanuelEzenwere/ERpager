@@ -183,12 +183,12 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
     def fit(self, x, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, x):
         """
         Transform method.
         
         Args:
-            X(numpy.ndarray):input column vector of text messages. Each row is a 
+            x(numpy.ndarray):input column vector of text messages. Each row is a 
                              sample text message.
         returns:
             df_array(numpy.ndarray):a new column binary vector. Each row is a 
@@ -196,14 +196,17 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
                              row in the input column vector is a verb, and 0,
                              otherwise).
         """
-        X_tagged = pd.Series(X).apply(self.starting_verb)
-        df_array = pd.DataFrame(X_tagged).values # converts to a 2D numpy array.
-        # df = X_tagged.values # removing this because the hstack fails.
+        x_tagged = pd.Series(x).apply(self.starting_verb)
+        df_array = pd.DataFrame(x_tagged).values # converts to a 2D numpy array.
+        # df = x_tagged.values # removing this because the hstack fails.
         
         # Log information about the transformation
         print("\n\nFeature Extraction and Text Transformation Complete:")
         print("Extracted/New feature shape:", df_array.shape)
-        print("Input feature shape: ", X.shape)
+        if type(x)==list:
+            print("Input feature shape: ", len(x))
+        else:
+            print("Input feature shape: ", x.shape)
         
         return df_array
     
