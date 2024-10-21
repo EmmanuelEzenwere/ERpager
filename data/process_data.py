@@ -9,8 +9,8 @@ def load_data(messages_filepath, categories_filepath):
     loads them in a pandas data frame.
     
     Args:
-        messages_filepath (string): file paths for messages csv file
-        categories_filepath (string): file paths for categories csv file
+        messages_filepath (str): file paths for messages csv file
+        categories_filepath (str): file paths for categories csv file
         
     Returns:
         combined_df(pandas.DataFrame): concatenated df containing both mssg_df and 
@@ -27,13 +27,14 @@ def load_data(messages_filepath, categories_filepath):
 def clean_data(df):
     """
     clean_data takes an input dataframe, df performs data type conversions 
-    where neccessary 
+    where neccessary, expands the columns of the data frame, and covert the 
+    column values to binary and drop duplicate rows. 
 
     Args:
-        df (_type_): _description_
+        df(pandas.DataFrame): _description_
         
     Return:
-       cleaned_df (Pandas Data Frame): 
+       cleaned_df(pandas.DataFrame): 
     """
     print("\nBegining Data Cleaning")
     print("-"*100)
@@ -70,8 +71,10 @@ def clean_data(df):
 
     print(f"\nFinding duplicate rows, number of duplicate rows : "
           f"{transformed_df.duplicated().sum()}")
+    
     # Remove Duplicates
     transformed_df.drop_duplicates(inplace=True)
+    
     print(f"\nDropped duplicate rows, Data Frame dimensions: row :"
           f"{transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
     print("\nData cleaning completed, Transformed Dataset (First Five Rows) :"
@@ -85,21 +88,18 @@ def clean_data(df):
 
 
 def save_data(data_frame, database_path):
-    """_summary_
+    """
+    save pandas dataframe table into an sqlite database.
 
     Args:
-        df (Pandas Data Frame): Pandas Data Frame containing cleaned data
+        df(pandas.DataFrame): Pandas Data Frame containing cleaned data
                                 to be loaded into the database.
-        database_path (String): relative path to where the sqllite database
+        database_path(str): relative path to where the sqllite database
                                 should be saved. eg DisasterTweets.db
-
-    Returns:
-        _type_: _description_
     """
     # Create an Sqlite database with a table for the Cleaned Data.
     engine = create_engine("sqlite:///"+database_path)
-    data_frame.to_sql("CleanData", engine, index=False)
-    return print("Saved")
+    data_frame.to_sql("cleandata", engine, index=False)
 
 
 def main():
