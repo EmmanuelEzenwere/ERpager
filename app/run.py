@@ -12,7 +12,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar, Scatter
+from plotly.graph_objs import Bar, Scatter, Pie
 from sqlalchemy import create_engine
 
 
@@ -53,7 +53,12 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    
+    print(df.groupby('genre'))
+    print("\n")
+    print(genre_counts)
+    print("\n")
+    print(df.groupby('genre').count())
+    print("3\n")
     print("genre:", genre_counts, genre_names)
     
     # create visuals
@@ -61,10 +66,31 @@ def index():
     graphs = [
         {
             'data': [
+                Pie(
+                    labels=genre_names,
+                    values=genre_counts,
+                    hoverinfo='label+percent',  # Display labels and percentages on hover
+                    textinfo='label+percent',  # Display labels and percentages on the pie chart
+                    marker=dict(colors=['gray', 'lightgreen', 'darkgreen']),  # Customize colors
+                )
+            ],
+            'layout': {
+                'title': 'Message Genre Distribution (Pie Chart)',
+                'showlegend': True  # Show legend for the pie chart
+            }
+        },
+        {
+            'data': [
                 Bar(
                     x=genre_names,
-                    y=genre_counts
-                )
+                    y=genre_counts,
+                    marker=dict(
+                    color='gray',  # Default color
+                    line=dict(color='blue', width=2)  # Optional line around bars
+                ),
+                hoverinfo='text',
+                hovertemplate='<b>%{x}</b><br>Count: %{y}<extra></extra>',  # Customize hover text
+            )
             ],
 
             'layout': {
@@ -73,7 +99,8 @@ def index():
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Genre",
+                    'tickangle': -80  # Rotate x-axis labels by 80 degrees
                 }
             }
         },
@@ -81,7 +108,8 @@ def index():
             'data': [
                 Bar(
                     x=genre_names,
-                    y=genre_counts
+                    y=genre_counts,
+                    marker=dict(color='gray')
                 )
             ],
 
@@ -91,7 +119,8 @@ def index():
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Genre",
+                    'tickangle': -80  # Rotate x-axis labels by 80 degrees
                 }
             }
         },
@@ -99,7 +128,8 @@ def index():
             'data': [
                 Scatter(
                     x=genre_names,
-                    y=genre_counts
+                    y=genre_counts,
+                    marker=dict(color='gray')
                 )
             ],
 
@@ -109,7 +139,8 @@ def index():
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Genre",
+                    'tickangle': -80  # Rotate x-axis labels by 80 degrees
                 }
             }
         }

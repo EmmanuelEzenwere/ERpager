@@ -1,8 +1,13 @@
 # Disaster Response Pipeline Project
+Machine Learning Web Application to Extract, Transform and Load (ETL) Twitter Messages into an SQL database and classify messages into response categories for Disaster Response Organisations during Disasters.
 
+<img src="assets/DisasterResponseDashboard.png" />
+<img src="assets/Plots.png" />
 
 ### Getting Started:
-1. **To run the python scripts**
+1. **To run the python scripts.**
+   
+   Create a virtual environment to manage application dependencies.
    
     ```
 	python3 -m venv myenv  
@@ -35,7 +40,7 @@
 2. Run the following command in the app's directory to run your web app.
     `python run.py`
 
-3. Go to http://0.0.0.0:3001/
+3. Go to http://127.0.0.1:3001/ or http://0.0.0.0:3001/
 
 
 

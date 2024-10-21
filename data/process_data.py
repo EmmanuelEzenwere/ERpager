@@ -4,18 +4,21 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    """ load_data extracts message and categories datasets from csv files and 
-        loads them in a pandas data frame.
+    """ 
+    load_data extracts message and categories datasets from csv files and 
+    loads them in a pandas data frame.
+    
     Args:
-        messages_filepath (_type_): _description_
-        categories_filepath (_type_): _description_
+        messages_filepath (string): file paths for messages csv file
+        categories_filepath (string): file paths for categories csv file
         
     Returns:
-        combined_df (_type_): concatenated df containing both mssg_df and 
+        combined_df(pandas.DataFrame): concatenated df containing both mssg_df and 
         cat_df
     """
     mssg_df = pd.read_csv(messages_filepath)
     cat_df = pd.read_csv(categories_filepath)
+    
     # merge datasets using id as a common key.
     combined_df = pd.merge(mssg_df, cat_df, on="id")
     return combined_df
@@ -133,3 +136,4 @@ def main():
 # save_data(cleaned_df, "CleanData")
 if __name__ == '__main__':
     main()
+    
