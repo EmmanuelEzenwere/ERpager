@@ -131,9 +131,8 @@ def main():
 # mssg_path = "disaster_messages.csv"
 # categories_path = "disaster_categories.csv"
 # db_path = "DisasterResponse.db"
-# df = load_data(mssg_path, categories_path)
-# cleaned_df = clean_data(df)
-# save_data(cleaned_df, "CleanData")
+
 if __name__ == '__main__':
     main()
     
+# python process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db

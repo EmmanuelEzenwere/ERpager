@@ -201,7 +201,10 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         # Log information about the transformation
         print("\n\nFeature Extraction and Text Transformation Complete:")
         print("Extracted/New feature shape:", df_array.shape)
-        print("Input feature shape: ", X.shape)
+        if type(X) == list:
+            print("Input feature shape: ", len(X))
+        else:
+            print("Input feature shape: ", X.shape)
         
         return df_array  
  
