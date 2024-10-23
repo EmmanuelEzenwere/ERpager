@@ -1,14 +1,17 @@
 import sys
-print(sys.path)
+# print(sys.path)
 import unittest
 import pandas as pd
 import os
 from sqlalchemy import create_engine
 # from data import load_data
+from test_train_classifier import chicken_duties
+print(chicken_duties())
+
 from data.process_data import load_data
 from data.process_data import save_data
 
-print(help(load_data))
+# print(help(load_data))
 
 class TestProcessData(unittest.TestCase):
 

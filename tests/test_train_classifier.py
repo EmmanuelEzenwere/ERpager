@@ -1,8 +1,14 @@
+def chicken_duties():
+    """_summary_
+    """
+    print("\n\nI am a chicken, these are my duties:",[],"\n\n")
+    return None
+    
 import unittest
 import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
-from train_classifier import load_data, tokenize, StartingVerbExtractor, build_model
+# from train_classifier import load_data, tokenize, StartingVerbExtractor, build_model
 
 class TestTrainClassifier(unittest.TestCase):
 
@@ -52,3 +58,6 @@ class TestTrainClassifier(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    
+    
+print("\n42 chickens exist... I am not one of them\n\n")

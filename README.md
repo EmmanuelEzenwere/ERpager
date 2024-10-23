@@ -44,3 +44,26 @@ Machine Learning Web Application to Extract, Transform and Load (ETL) Twitter Me
 
 
 
+## Project Files Overview
+
+data
+- There is a process data script with a program to extract data from csv files and load into a pandas data frame, clean and transform the data into a dataset for a machine learning model to classify messages into the appropriate disaster response category.
+- This makes use of helper functions such as
+- -  load_data
+- - save_data
+
+
+models
+
+- There is a train_classifier script with a program to fetch the cleaned data from an sqlite database, load into a pandas data frame and split into training and tests set for a machine learning model to classify messages into the appropriate disaster response category.
+- - Tokenize
+- -  Starating Verb Extractor
+- - save model as a pickel file
+- - build_model
+- - 
+
+workspace
+Jupyter notebooks with functions in cells to perform little experiments before running main program scripts for ETL or ML pipeline.
+
+tests
+- Actively in development, unit testing scripts for future development support.
