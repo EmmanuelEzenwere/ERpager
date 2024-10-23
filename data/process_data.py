@@ -18,7 +18,7 @@ def load_data(messages_filepath, categories_filepath):
     """
     mssg_df = pd.read_csv(messages_filepath)
     cat_df = pd.read_csv(categories_filepath)
-    
+      
     # merge datasets using id as a common key.
     combined_df = pd.merge(mssg_df, cat_df, on="id")
     return combined_df

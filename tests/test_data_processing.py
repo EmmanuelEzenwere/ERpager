@@ -1,8 +1,101 @@
+import sys
+print(sys.path)
 import unittest
 import pandas as pd
-from io import StringIO
-from your_script_name import load_data, clean_data, save_data  # Adjust the import based on your script name
+import os
+from sqlalchemy import create_engine
+# from data import load_data
+from data.process_data import load_data
+from data.process_data import save_data
 
+print(help(load_data))
+
+class TestProcessData(unittest.TestCase):
+
+    def setUp(self):
+        """Set up sample data for testing."""
+        # Sample messages and categories data
+        self.messages_data = {
+            'id': [1, 2, 3],
+            'message': ['Hello', 'Help', 'Goodbye'],
+            'original': ['Hola', 'Ayuda', 'Adiós'],
+            'genre': ['social', 'news', 'direct']
+        }
+        self.categories_data = {
+            'id': [1, 2, 3],
+            'categories': ['related-1;request-0;offer-0', 
+                           'related-1;request-1;offer-0', 
+                           'related-0;request-0;offer-1']
+        }
+
+        # Create DataFrames from sample data
+        self.messages_df = pd.DataFrame(self.messages_data)
+        self.categories_df = pd.DataFrame(self.categories_data)
+
+    def test_load_data(self):
+        """Test loading and merging data."""
+        # Create temporary CSV files for messages and categories
+        self.messages_df.to_csv('test_messages.csv', index=False)
+        self.categories_df.to_csv('test_categories.csv', index=False)
+        
+        # Load and merge data
+        df = load_data('test_messages.csv', 'test_categories.csv')
+        
+        # Test the shape and contents of the combined dataframe
+        self.assertEqual(df.shape[0], 3)  # Check the number of rows
+        self.assertIn('message', df.columns)  # Check for specific column
+        self.assertIn('categories', df.columns)  # Check for specific column
+        
+        # Clean up temporary files
+        os.remove('test_messages.csv')
+        os.remove('test_categories.csv')
+
+    def test_clean_data(self):
+        """Test cleaning of data."""
+        # Merge the messages and categories first
+        df = pd.merge(self.messages_df, self.categories_df, on="id")
+        
+        # Clean the merged dataframe
+        cleaned_df = clean_data(df)
+        
+        # Test the new columns are binary and correctly converted
+        self.assertEqual(cleaned_df.shape[0], 3)  # Check the number of rows
+        self.assertIn('related', cleaned_df.columns)  # Check for expanded categories
+        self.assertTrue(all(cleaned_df['related'].isin([0, 1])))  # Ensure binary conversion
+        
+        # Test that there are no duplicates
+        self.assertFalse(cleaned_df.duplicated().any())
+
+    def test_save_data(self):
+        """Test saving data to a SQLite database."""
+        # Sample cleaned dataframe
+        cleaned_df = clean_data(pd.merge(self.messages_df, self.categories_df, on="id"))
+        
+        # Save to an SQLite database
+        save_data(cleaned_df, 'test_database.db')
+        
+        # Test that the database and table exist
+        engine = create_engine("sqlite:///test_database.db")
+        table_names = engine.table_names()
+        self.assertIn('cleandata', table_names)  # Check that table was created
+        
+        # Clean up the test database file
+        os.remove('test_database.db')
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
 class TestDataProcessing(unittest.TestCase):
     
     def setUp(self):
