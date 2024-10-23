@@ -1,17 +1,13 @@
 import sys
-# print(sys.path)
 import unittest
 import pandas as pd
 import os
 from sqlalchemy import create_engine
-# from data import load_data
+from data import load_data
 from test_train_classifier import chicken_duties
-print(chicken_duties())
-
 from data.process_data import load_data
 from data.process_data import save_data
 
-# print(help(load_data))
 
 class TestProcessData(unittest.TestCase):
 
@@ -88,16 +84,6 @@ class TestProcessData(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-
-
-    
-    
-    
-    
-    
-    
-    
-    
     
 class TestDataProcessing(unittest.TestCase):
     
@@ -157,13 +143,9 @@ if __name__ == '__main__':
     unittest.main()
     
     
-    
-    
 print(tokenize('There.'))
 print(WordNetLemmatizer().lemmatize('there'))
 'there' in set(stopwords.words("english"))
-
-
 
 
 def display_dataset(X_train, y_train, X_test=None, y_test=None):
@@ -203,7 +185,6 @@ for token in word_tokenize(text.lower()):
 #     report = classification_report(y_test[:,col_index], y_pred[:, col_index], zero_division=0)
 #     print(classes[col_index])
 #     print(report)
-
 
 
 
