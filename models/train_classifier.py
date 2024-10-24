@@ -1,41 +1,42 @@
 # import libraries
 import sys
-import re
 import sklearn
 import nltk
+import re
 import pickle 
 
 import numpy as np
 import pandas as pd
-
 from pprint import pprint
 from sqlalchemy import create_engine
-
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.stem import WordNetLemmatizer
-
-# help(sklearn)
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
-from sklearn.pipeline import FeatureUnion, Pipeline
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, precision_score, recall_score, f1_score
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import GridSearchCV
-
-import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Download the stopwords and all nltk relevant packages.
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfTransformer, TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.multioutput import MultiOutputClassifier
 
-# Download the Punkt tokenizer model
+#help(sklearn.multioutput)
+# help(sklearn)
+
+from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import FeatureUnion,Pipeline
+
+
+#help(sklearn.metrics)
+#help(sklearn.multioutput)
+
+# Download the stopwords and all nltk relevant packages.
 nltk.download('punkt')
-# Download the stopwords
 nltk.download('stopwords')
-# Download the WordNet model
 nltk.download('wordnet')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('averaged_perceptron_tagger_eng')
@@ -45,7 +46,7 @@ stop_words = set(stopwords.words("english"))
 
 
 def load_data(
-    database_path="data/DisasterResponse.db",
+    database_path="../data/DisasterResponse.db",
     x_column_name = "message", 
     y_start=4, 
     y_stop=None, 
@@ -134,47 +135,38 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         returns:
              tag(integer): 1 if the first word is a verb, 0 otherwise.
         """
+        self.run_count += 1
         try:
-            
             # print("\n\nText:", text)
-            sentence_list = nltk.sent_tokenize(text)
-            for sentence in sentence_list:
-                # Tokenize the sentence
-                text_tokens = tokenize(sentence)
-                
-                if text_tokens:
-                    # Get the POS (parts of speech) of the words in the text.
-                    first_word, first_tag = nltk.pos_tag(text_tokens)[0]
-                    
-                    # Check if the first word is a Verb or 'RT' (retweet). 
-                    if first_tag in ['VB', 'VBP', 'UH'] or first_word == 'RT':
-                        # print("\nVerb, Tag: ",first_tag, ", First Word: ",first_word)
-                        tag = 1
-                        return tag
-                    else:
-                        # print(f"\nNon-verb, Tag: {first_tag}, First Word: ,{first_word}")
-                        tag = 0
-                        return tag
-                else:
-                    # print(f'Empty Text Tokens, {text_tokens} in "{sentence}"')
-                    pass
+            first_sentence = nltk.sent_tokenize(text)[0]
             
-            # If no sentences were found in the entire text.
-            self.run_count += 1
-            print(f"Non-Text first word({self.run_count}): ", sentence_list)
-            print("Default Tag: 0\n")
-            tag = 0
-            return tag
-        
-        except IndexError as e:
-            print(f"IndexError: {e}")
-            print(f"Text causing issue: {text}")
-            tag = 0
-            return tag
-    
+            # Tokenize the first_sentence
+            text_tokens = tokenize(first_sentence) 
+            if not text_tokens:
+                # print(f'Empty Text Tokens, {text_tokens} in first "{first_sentence}"')
+                # No text token in first sentence or first sentence in text is empty
+                # print(f"Non-Text first word({self.run_count}): ", first_sentence)
+                # print("Default Tag: 0\n")
+                tag = 0
+                return tag
+                
+            # Get the POS (parts of speech) of the words in the text.
+            first_word, first_tag = nltk.pos_tag(text_tokens)[0]
+            
+            # Check if the first word is a Verb or 'RT' (retweet). 
+            if first_tag in ['VB', 'VBP', 'UH'] or first_word == 'RT':
+                # print("\nVerb, Tag: ",first_tag, ", First Word: ",first_word)
+                tag = 1
+                return tag
+            else:
+                # print(f"\nNon-verb, Tag: {first_tag}, First Word: ,{first_word}")
+                tag = 0
+                return tag
+                
         except Exception as e:
-            print(f"Unexpected error: {e}")
-            print(f"Text causing issue: {text}")
+            # print(f"Unexpected error: {e}")
+            # print(f"Run No.({self.run_count})")
+            # print(f"Text causing issue: {text}")
             tag = 0
             return tag
     
@@ -206,51 +198,34 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         else:
             print("Input feature shape: ", X.shape)
         
-        return df_array  
+        return df_array
  
-def confusion_matrix_plot(y_test, y_pred, class_names):
-    """
-    Plots a confusion matrix of the actual class (output) and predicted class.
-
-    Args:
-        y_test (numpy.ndarray): actual output data.
-        y_pred (numpy.ndarray): predicted output data as returned by our model,
-                              classifier.
-        class_names (list): list of all class names in the output dataset.
-    """
-    # Convert one-hot to labels
-    y_test_labels = np.argmax(y_test, axis=1)
-    y_pred_labels = np.argmax(y_pred, axis=1)
-
-    # Create confusion matrix with explicit labels
-    all_classes = np.arange(len(class_names))  # 0 to 35
-    conf_matrix = confusion_matrix(y_test_labels, y_pred_labels) #, labels=all_classes)
-
-    # Visualize
-    plt.figure(figsize=(13, 6))
-    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues')
-    plt.xlabel('Predicted Class')
-    plt.ylabel('True Class')
-    plt.title('Confusion Matrix')
-    plt.show()
-
+ 
 def calculate_multiclass_accuracy(y_true, y_pred):
     """
     Calculate accuracy for multi-class classification
     
     Args:
-        y_test (numpy.ndarray): actual output data.
-        y_pred (numpy.ndarray): predicted output data as returned by our model,
+        y_test(numpy.ndarray): actual output data.
+        y_pred(numpy.ndarray): predicted output data as returned by our model,
                               classifier.
     
     Returns:
-        summary_accuracy_score (float): summary accuracy using decoded labels.
+        summary_accuracy_score(float): summary accuracy using decoded labels.
     """
     # Convert to labels if one-hot encoded
     if (len(y_true.shape) > 1) & (len(y_pred.shape) > 1):
-        y_true = np.argmax(y_true, axis=1)
-        y_pred = np.argmax(y_pred, axis=1)
-        summary_accuracy_score = accuracy_score(y_true, y_pred)
+        # Initialize an empty list to store per-column accuracy
+        accuracies = []
+
+        # Iterate over each column (class output)
+        for col in range(y_true.shape[1]):
+            # Compute accuracy for the current column
+            col_accuracy = accuracy_score(y_true[:, col], y_pred[:, col])
+            accuracies.append(col_accuracy)
+
+        # Average accuracy across all columns
+        summary_accuracy_score = np.mean(accuracies)
        
     else:
         print("Empty values for y test or y pred")
@@ -264,13 +239,13 @@ def per_class_accuracy(y_true, y_pred, class_names):
     Calculate accuracy for each class separately
 
     Args
-        y_test (numpy.ndarray): actual output data.
-        y_pred (numpy.ndarray): predicted output data as returned by our model,
+        y_test(numpy.ndarray): actual output data.
+        y_pred(numpy.ndarray): predicted output data as returned by our model,
                               classifier.
         class_names (list): list of all class names in the output dataset.
     
     return
-        accuracies_df (pandas.core.frame.DataFrame): a dataframe of class names 
+        accuracies_df (pd.DataFrame): a dataframe of class names 
         and their correspoinding accuracy score for binary classification
     
     """
@@ -291,7 +266,7 @@ def per_class_accuracy(y_true, y_pred, class_names):
     accuracies_df = pd.DataFrame({"category":class_names, "accuracy":accuracies})
     return accuracies_df
     
-
+    
 def evaluate_multilabel_model(y_true, y_pred, class_names):
     """
     Comprehensive evaluation of a multi-label classification model.
@@ -303,59 +278,86 @@ def evaluate_multilabel_model(y_true, y_pred, class_names):
         class_names (list): list of all class names in the output dataset.
         
     return
-        metrics_df(pandas.core.frame.DataFrame): a dataframe of class names 
+        metrics_df(pd.DataFrame): a dataframe of class names 
                               and their correspoinding precision, recall and 
                               F1-score values, for binary classification
     """
-    sample_accuracy = calculate_multiclass_accuracy(y_true, y_pred)
-    print(f"Overall Sample-wise Accuracy: {sample_accuracy:.3f}\n")
+    average_accuracy = calculate_multiclass_accuracy(y_true, y_pred)
+    print(f"Overall Sample-wise Accuracy: {average_accuracy:.3f}")
     print("-"*100)
 
-    
     # Calculate per-class accuracy
-    print(per_class_accuracy(y_true, y_pred, class_names))
-    print("-"*100)
+    accuracies_df = per_class_accuracy(y_true, y_pred, class_names)
 
-    # *** Per-class classification metrics
-    print('Detailed classification report per class')
-    print("-"*100)
-
-    
-    results = []
+    # Per-class classification metrics
+    classification_metrics = []
+    reports = {}
     for i in range(y_true.shape[1]):
         if np.sum(y_true[:, i]) > 0:  # Check if there are true instances
             precision = precision_score(y_true[:, i], y_pred[:, i], average='macro', zero_division=0)
             recall = recall_score(y_true[:, i], y_pred[:, i],average='macro', zero_division=0)
             f1 = f1_score(y_true[:, i], y_pred[:, i],average='macro', zero_division=0)
         
-            results.append({
+            classification_metrics.append({
                 'Class': class_names[i],
                 'Precision': precision,
                 'Recall': recall,
                 'F1-Score': f1
             })
         
-            print(f"\nDetailed metrics for {class_names[i]}:")
-            print(classification_report(y_true[:, i], y_pred[:, i], zero_division=0))
+            
+            report_dict = classification_report(y_true[:, i], y_pred[:, i], zero_division=0, output_dict=True)
+            report_df = pd.DataFrame(report_dict).transpose()
+            report_df = report_df.round(3)
+            report_log = None
+            reports[class_names[i]]=[report_df, report_log]
+            
         else:
-            results.append({
+            classification_metrics.append({
                 'Class': class_names[i],
                 'Precision': np.nan,
                 'Recall': np.nan,
                 'F1-Score': np.nan
             })
-            print(f"\nNo true instances for {class_names[i]}, skipping detailed report.")
+            report_df = None
+            reports_log = f"\nFound No true instances for {class_names[i]}. Ommitted from report\n"
+            reports[class_names[i]]=[report_df, reports_log]
             
-    # Create a DataFrame with all classification metrics per class
-    print("-"*100)
-    metrics_df = pd.DataFrame(results)
+    # Create a DataFrame with a summary classification metrics per class.
+    classification_metrics_df = pd.DataFrame(classification_metrics)
     print("\nSummary of all metrics:")
     print("-"*100)
-    print(metrics_df.round(3))
+    metrics_df = pd.concat([accuracies_df, classification_metrics_df.iloc[:,1:]], axis=1).round(3)
     
+    if 'ipykernel' in sys.modules:
+        # Running in a Jupyter Notebook.
+        display(metrics_df.round(3))
+
+    else:
+        # Not running in a Jupyter Notebook.
+        print(metrics_df.round(3))
+        
+    
+    print('Detailed classification report per class')
+    print("-"*100)
+    for class_name in reports.keys():
+        print(f"\nDetailed metrics for {class_name}:")
+        report_df = reports[class_name][0]
+        if report_df is not None:
+            if 'ipykernel' in sys.modules:
+                # Running in a Jupyter Notebook.
+                display(report_df)
+
+            else:
+                # Not running in a Jupyter Notebook.
+                print(report_df)
+        else:
+            report_log = reports[class_name][1]
+            print(report_log)
+        
     # Visualize metrics
     plt.figure(figsize=(10, 6))
-    metrics_melted = pd.melt(metrics_df, id_vars=['Class'], 
+    metrics_melted = pd.melt(classification_metrics_df, id_vars=['Class'], 
                            value_vars=['Precision', 'Recall', 'F1-Score'])
     sns.barplot(x='Class', y='value', hue='variable', data=metrics_melted)
     plt.xticks(rotation=80)
@@ -364,9 +366,9 @@ def evaluate_multilabel_model(y_true, y_pred, class_names):
     plt.show()
     
     return metrics_df
-        
-        
-def evaluate_model(model, x_test, y_test, class_names):
+             
+              
+def model_evaluator(model, x_test, y_test, class_names):
     """
     Evaluate the model and print all relevant metrics
     
@@ -378,7 +380,7 @@ def evaluate_model(model, x_test, y_test, class_names):
     Returns:
         y_pred(numpy.ndarray): predicted output data as returned by our model,
                               classifier.
-        metrics_df(pandas.core.frame.DataFrame): a dataframe of class names 
+        metrics_df(pd.DataFrame): a dataframe of class names 
                               and their correspoinding precision, recall and 
                               F1-score values, for binary classification
         
@@ -386,6 +388,7 @@ def evaluate_model(model, x_test, y_test, class_names):
     print("-"*100)
     print("MODEL PERFORMANCE EVALUATION")
     print("-"*100)
+    
     # Get predictions
     y_pred = model.predict(x_test)
     
@@ -393,9 +396,9 @@ def evaluate_model(model, x_test, y_test, class_names):
     if hasattr(model, 'best_params_'):
         print('ML-Pipeline Model')
         print("-"*100)
-        print("Best parameters found:")
-        pprint(model.best_params_)
         print("\nBest cross-validation score:", model.best_score_)
+        print("\nBest parameters found:")
+        pprint(model.best_params_)
         print("-"*100)
     else:
         print('Non-ML Pipeline Model')
@@ -403,16 +406,13 @@ def evaluate_model(model, x_test, y_test, class_names):
     
     # Evaluate the model
     metrics_df = evaluate_multilabel_model(y_test, y_pred, class_names)
-    
-    confusion_matrix_plot(y_test, y_pred, class_names)
-    print("\n")
   
     return y_pred, metrics_df
 
 
-def save_model(model, filepath='train_classifier.pkl'):
+def save_model(model, filepath='classifier.pkl'):
     """
-    Saves the ML model as a pickle file.
+    Saves the fitted ML model as a pickle file in the current directory.
 
     Args:
         model (pipeline or GridSearchCV object): The ML model to be saved.
@@ -426,6 +426,7 @@ def save_model(model, filepath='train_classifier.pkl'):
         print("Model exported successfully!")
     except Exception as e:
         print(f"Error saving model: {e}")
+
 
 def build_model():
     """
@@ -468,7 +469,7 @@ def build_model():
 
 def main():
     """
-    _summary_
+    ML model run script.
     
     """
     if len(sys.argv) == 3:
@@ -484,7 +485,7 @@ def main():
         model.fit(X_train, Y_train)
         
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        model_evaluator(model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
