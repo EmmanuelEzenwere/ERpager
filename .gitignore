@@ -1,3 +1,30 @@
+# My specific virtual environment
 /myenv
+
+# Mac
 /.DS_Store
+
+# Model Pickel Files. git lfs already handles this.
 *.pkl
+
+# Python byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.so
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm & other IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Virtual Environment
+venv/
+env/
+ENV/
