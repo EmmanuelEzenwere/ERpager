@@ -93,7 +93,7 @@ Flask-based web interface providing:
 
 
 ### Class Imbalance Considerations
-The dataset exhibits significant class imbalance, particularly in categories like 'water' and 'child alone' which has all zeros. This presents several challenges:
+The dataset exhibits significant class imbalance, particularly in categories like 'water' and 'child alone' which has near or all zeros. This presents several challenges:
 
 - **Training Impact**: Underrepresented classes may have lower prediction accuracy
 - **Metric Selection**: F1-score provides a balanced measure for imbalanced classes
@@ -111,7 +111,7 @@ The dataset exhibits significant class imbalance, particularly in categories lik
 - [ ] Enhanced handling of class imbalance eg using class weights in the ML training pipeline.
 - [ ] Integration with disaster response organizations
 
-## 🧪 Testing
+## Testing
 
 Run the test suite (In development):
 ```bash
@@ -119,7 +119,7 @@ python -m tests/test_data_processing.py
 python -m tests/test_train_classifier.py
 ```
 
-## 📝 Development Notes
+## Development Notes
 
 The `workspace/` directory contains Jupyter notebooks used for:
 - Experimental feature development
