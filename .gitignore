@@ -5,7 +5,6 @@
 /.DS_Store
 
 # Model Pickel Files. git lfs already handles this.
-*.pkl
 
 # Python byte-compiled files
 __pycache__/
