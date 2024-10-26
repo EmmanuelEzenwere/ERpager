@@ -9,8 +9,8 @@ def load_data(messages_filepath, categories_filepath):
     loads them in a pandas data frame.
     
     Args:
-        messages_filepath (str): file paths for messages csv file
-        categories_filepath (str): file paths for categories csv file
+        messages_filepath(str): file paths for messages csv file
+        categories_filepath(str): file paths for categories csv file
         
     Returns:
         combined_df(pandas.DataFrame): concatenated df containing both mssg_df and 
@@ -40,7 +40,7 @@ def clean_data(df):
     print("-"*100)
     print("\nInitial Combined Dataset (First Five Rows): \n", df.head(5))
     print(f"\nInitial Combined Dataset Data Frame dimensions: rows : "
-          f"{df.shape[0]}, col : {df.shape[1]}")
+          f"{df.shape[0]}, cols : {df.shape[1]}")
 
     # Get the df excluding the categories column.
     non_categories_columns = df.drop(columns="categories")
@@ -51,7 +51,7 @@ def clean_data(df):
     categories_columns = df.categories.str.split(";", expand=True)
     categories_columns.columns = categories_labels
     print("\nFeature Extraction from Message Column and Data type conversion,"
-          "convert category values to binary indicators .................")
+          " convert category values to binary indicators .................")
 
     # Convert category values to binary indicators (1 or 0)
     for col_name in categories_labels:
@@ -66,27 +66,26 @@ def clean_data(df):
     # non-categories data frame.
     transformed_df = pd.concat([non_categories_columns, categories_columns], axis=1)
     print("\nTransformed Dataset (First Five Rows): \n", transformed_df.head(5))
-    print(f"\nTransformed Dataset Data Frame dimensions: row :"
+    print(f"\nTransformed Dataset Data Frame dimensions: rows :"
           f" {transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
 
-    print(f"\nFinding duplicate rows, number of duplicate rows : "
-          f"{transformed_df.duplicated().sum()}")
+    print(f"\n({transformed_df.duplicated().sum()}) duplicate rows found")
     
     # Remove Duplicates
     transformed_df.drop_duplicates(inplace=True)
     
-    print(f"\nDropped duplicate rows, Data Frame dimensions: row :"
-          f"{transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
+    print(f"\nDuplicate rows dropped, Data Frame dimensions: rows :"
+          f" {transformed_df.shape[0]}, cols : {transformed_df.shape[1]}")
     print("\nData cleaning completed, Transformed Dataset (First Five Rows) :"
           "\n", transformed_df.head(5))
-    print(f"Initial Combined Dataset Data Frame dimensions: rows : "
-          f"{df.shape[0]}, col : {df.shape[1]}\n")
-    print(f"\nCleaned Dataset Data Frame dimensions: rows : "
-          f"{transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
+    print(f"Initial Combined Dataset, Data Frame dimensions: rows : "
+          f"{df.shape[0]}, cols : {df.shape[1]}\n")
+    print(f"\nCleaned Dataset, Data Frame dimensions: rows : "
+          f"{transformed_df.shape[0]}, cols : {transformed_df.shape[1]}")
     
     return transformed_df
 
-
+    
 def save_data(data_frame, database_path):
     """
     save pandas dataframe table into an sqlite database.
@@ -98,8 +97,9 @@ def save_data(data_frame, database_path):
                                 should be saved. eg DisasterTweets.db
     """
     # Create an Sqlite database with a table for the Cleaned Data.
-    engine = create_engine("sqlite:///"+database_path)
-    data_frame.to_sql("cleandata", engine, index=False)
+    engine = create_engine(f'sqlite:///{database_path}')
+    # add table to an sqlite db, overwrite the table if it already exists.
+    data_frame.to_sql("cleandata", engine, index=False, if_exists='replace')
 
 
 def main():
