@@ -52,15 +52,6 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    print(df.head(3))
-    print('\n')
-    print(df.groupby('genre'))
-    print("\n")
-    print(genre_counts)
-    print("\n")
-    print(df.groupby('genre').count())
-    print("3\n")
-    print("genre:", genre_counts, genre_names)
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
