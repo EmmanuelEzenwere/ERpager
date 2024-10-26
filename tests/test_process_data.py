@@ -5,12 +5,19 @@ import os
 import pandas as pd
 from sqlalchemy import create_engine
 
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', None)
+
 # Add the parent directory to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from data.process_data import load_data, clean_data, save_data
+from models.train_classifier import tokenize
 
 class TestProcessData(unittest.TestCase):
     """Test cases for disaster response data processing functions"""
+    
     
     @classmethod
     def setUpClass(cls):
@@ -36,9 +43,9 @@ class TestProcessData(unittest.TestCase):
         # Create a small sample categories.csv file
         categories_data = """id,categories
 1,"related-1;request-1;aid_related-1;medical_help-0;water-1"
-2,"related-1;request-1;aid_related-1;medical_help-0;food-1;shelter-1"
-3,"related-1;request-0;aid_related-1;medical_help-0;infrastructure_related-1;electricity-1"
-4,"related-1;request-1;aid_related-1;medical_help-1;medical_assistance-1" """
+2,"related-1;request-1;aid_related-1;medical_help-0;water-0"
+3,"related-1;request-0;aid_related-1;medical_help-0;water-1"
+4,"related-1;request-1;aid_related-1;medical_help-1;water-1" """
 
         # Write test CSV files
         with open(self.messages_filepath, 'w') as f:
@@ -50,7 +57,7 @@ class TestProcessData(unittest.TestCase):
     def test_load_data(self):
         """Test if load_data correctly loads and merges the datasets"""
         df = load_data(self.messages_filepath, self.categories_filepath)
-        
+
         # Test the loaded data structure
         self.assertEqual(len(df), 4)  # Should have 4 rows
         self.assertTrue(all(col in df.columns 
@@ -64,12 +71,14 @@ class TestProcessData(unittest.TestCase):
         """Test if clean_data correctly processes the DataFrame"""
         # First load the data
         df = load_data(self.messages_filepath, self.categories_filepath)
+       
+        # Clean the data
         cleaned_df = clean_data(df)
-        
+
         # Test binary values in category columns
         category_columns = [col for col in cleaned_df.columns 
                           if col not in ['id', 'message', 'original', 'genre']]
-        
+
         for col in category_columns:
             unique_vals = cleaned_df[col].unique()
             self.assertTrue(all(val in [0.0, 1.0] for val in unique_vals),
@@ -138,7 +147,6 @@ class TestTextProcessing(unittest.TestCase):
 
     def test_tokenize(self):
         """Test if tokenize correctly processes text"""
-        from data.process_data import tokenize
         
         # Test first message
         tokens = tokenize(self.test_df['message'].iloc[0])
@@ -147,7 +155,6 @@ class TestTextProcessing(unittest.TestCase):
 
     def test_tokenize_empty(self):
         """Test tokenize with empty input"""
-        from data.process_data import tokenize
         self.assertEqual(tokenize(''), [])
 
     def tearDown(self):
@@ -156,4 +163,4 @@ class TestTextProcessing(unittest.TestCase):
         self.test_df = None
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

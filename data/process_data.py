@@ -41,26 +41,30 @@ def clean_data(df):
     print("\nInitial Combined Dataset (First Five Rows): \n", df.head(5))
     print(f"\nInitial Combined Dataset Data Frame dimensions: rows : "
           f"{df.shape[0]}, cols : {df.shape[1]}")
-
+    
+    # Clean data at source by stripping empty spaces.
+    df['categories'] = df['categories'].str.strip()
+    
     # Get the df excluding the categories column.
     non_categories_columns = df.drop(columns="categories")
     
-    # Create new column labels from the inputs of categories.
+    # Create new column labels from split first categories category values.
     categories_labels = df.categories.values[0].split(";")
     categories_labels = [col_name[:-2] for col_name in categories_labels]
+    
     categories_columns = df.categories.str.split(";", expand=True)
     categories_columns.columns = categories_labels
+    
     print("\nFeature Extraction from Message Column and Data type conversion,"
           " convert category values to binary indicators .................")
 
     # Convert category values to binary indicators (1 or 0)
     for col_name in categories_labels:
-        # replace categories column values with the binary value at the end of 
-        # the text value.
+        # replace column string values with the binary value at the end of the value.
         categories_columns[col_name] = categories_columns[col_name].str[-1]
-        # Data type conversion: convert column values from string to 
-        # numeric type, float
-        categories_columns[col_name] = categories_columns[col_name].astype(float)
+        
+        # Data type conversion: convert column values from string to int (binary)
+        categories_columns[col_name] = categories_columns[col_name].astype(int)
 
     # Concatenate the new categories columns, with the rest of the 
     # non-categories data frame.
@@ -68,14 +72,16 @@ def clean_data(df):
     print("\nTransformed Dataset (First Five Rows): \n", transformed_df.head(5))
     print(f"\nTransformed Dataset Data Frame dimensions: rows :"
           f" {transformed_df.shape[0]}, col : {transformed_df.shape[1]}")
-
-    print(f"\n({transformed_df.duplicated().sum()}) duplicate rows found")
     
-    # Remove Duplicates
-    transformed_df.drop_duplicates(inplace=True)
+    num_of_duplicates = transformed_df.duplicated().sum()
+    print(f"\n({num_of_duplicates}) duplicate rows found")
     
-    print(f"\nDuplicate rows dropped, Data Frame dimensions: rows :"
-          f" {transformed_df.shape[0]}, cols : {transformed_df.shape[1]}")
+    if num_of_duplicates > 0:
+        # Remove Duplicates
+        transformed_df.drop_duplicates(inplace=True)
+        print(f"\nDuplicate rows dropped, Data Frame dimensions: rows :"
+            f" {transformed_df.shape[0]}, cols : {transformed_df.shape[1]}")
+        
     print("\nData cleaning completed, Transformed Dataset (First Five Rows) :"
           "\n", transformed_df.head(5))
     print(f"Initial Combined Dataset, Data Frame dimensions: rows : "

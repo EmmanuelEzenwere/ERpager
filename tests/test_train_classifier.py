@@ -80,7 +80,7 @@ class TestTrainClassifier(unittest.TestCase):
             },
             {
                 'input': 'Medical supplies required IMMEDIATELY!!!',
-                'expected': ['medical', 'supply', 'require', 'immediately']
+                'expected': ['medical', 'supply', 'require', 'immediate']
             },
             {
                 'input': '',  # Empty text

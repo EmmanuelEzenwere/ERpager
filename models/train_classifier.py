@@ -113,8 +113,27 @@ def tokenize(text, stop_words=None):
     normalized_text = re.sub(r'[^a-zA-Z0-9]', ' ', normalized_text)
     
     tokens = word_tokenize(normalized_text)
-    tokens = [lemmatizer.lemmatize(token) for token in tokens if token not in stop_words]
-    return tokens
+        
+    # Lemmatize with POS tagging
+    clean_tokens = []
+    for token in tokens:
+        if token not in stop_words:
+            pos_tag = nltk.pos_tag([token])[0][1]
+            
+            # Special handling for adverbs ending in 'ly'
+            if pos_tag.startswith('RB') and token.endswith('ly'):
+                base_form = token[:-2]  # Remove 'ly'
+                clean_token = lemmatizer.lemmatize(base_form, pos='a')
+            elif pos_tag.startswith('VB'):
+                clean_token = lemmatizer.lemmatize(token, pos='v')
+            elif pos_tag.startswith('JJ'):
+                clean_token = lemmatizer.lemmatize(token, pos='a')
+            else:
+                clean_token = lemmatizer.lemmatize(token, pos='n')
+            
+            clean_tokens.append(clean_token)
+    
+    return clean_tokens
 
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
     
@@ -137,24 +156,29 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         """
         self.run_count += 1
         try:
+            # Check for RT (retweet) first
+            if text.strip().upper().startswith('RT'):
+                return 1
+        
             # print("\n\nText:", text)
             first_sentence = nltk.sent_tokenize(text)[0]
             
             # Tokenize the first_sentence
             text_tokens = tokenize(first_sentence) 
+            
             if not text_tokens:
-                # print(f'Empty Text Tokens, {text_tokens} in first "{first_sentence}"')
                 # No text token in first sentence or first sentence in text is empty
-                # print(f"Non-Text first word({self.run_count}): ", first_sentence)
-                # print("Default Tag: 0\n")
+        
+                # print(f'Empty Text Tokens, {text_tokens} in first "{first_sentence}"')
+                # print(f"Non-Text first word({self.run_count}): ")
                 tag = 0
                 return tag
-                
+            
             # Get the POS (parts of speech) of the words in the text.
             first_word, first_tag = nltk.pos_tag(text_tokens)[0]
             
-            # Check if the first word is a Verb or 'RT' (retweet). 
-            if first_tag in ['VB', 'VBP', 'UH'] or first_word == 'RT':
+            # Check if the first word is a Verb. 
+            if first_tag in ['VB', 'VBP', 'UH']:
                 # print("\nVerb, Tag: ",first_tag, ", First Word: ",first_word)
                 tag = 1
                 return tag
