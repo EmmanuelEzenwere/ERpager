@@ -1,7 +1,6 @@
 import sys
 import os
 
-
 import json
 import plotly
 import joblib
@@ -53,6 +52,8 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+    print(df.head(3))
+    print('\n')
     print(df.groupby('genre'))
     print("\n")
     print(genre_counts)
