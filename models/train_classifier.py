@@ -525,3 +525,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
+# python train_classifier.py ../data/DisasterResponse.db classifier.pkl
