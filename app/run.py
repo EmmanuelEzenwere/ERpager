@@ -1,6 +1,6 @@
 import sys
 import os
-
+import sys
 import json
 import plotly
 import joblib
@@ -15,32 +15,37 @@ from plotly.graph_objs import Bar, Scatter, Pie
 from sqlalchemy import create_engine
 
 
-# Set up project path
+# # Set up project path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
 
 from models.train_classifier import StartingVerbExtractor
 
-
 app = Flask(__name__)
 
-def tokenize(text):
-    tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
+# Use os.path.join for portable paths
+database_filepath = os.path.join('data', 'DisasterResponse.db')
+model_filepath = os.path.join('models', 'classifier.pkl')
 
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
+# def tokenize(text):
+#     tokens = word_tokenize(text)
+#     lemmatizer = WordNetLemmatizer()
 
-    return clean_tokens
+#     clean_tokens = []
+#     for tok in tokens:
+#         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+#         clean_tokens.append(clean_tok)
+
+#     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///data/DisasterResponse.db')
+engine = create_engine(f'sqlite:///{database_filepath}')
 df = pd.read_sql_table('cleandata', engine)
 
 # load model
-model = joblib.load("./models/classifier.pkl")
+model = joblib.load(model_filepath)
+
+
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -164,9 +169,15 @@ def go():
     )
 
 
+# def main():
+#     app.run(host='0.0.0.0', port=3001, debug=True)
+
 def main():
-    app.run(host='0.0.0.0', port=3001, debug=True)
-
-
+    # Get port from environment variable or default to 3001
+    port = int(os.environ.get('PORT', 3001))
+    # Enable debug mode locally, disable in production
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    app.run(host='0.0.0.0', port=port, debug=debug)
+    
 if __name__ == '__main__':
     main()

@@ -4,6 +4,7 @@ import sklearn
 import nltk
 import re
 import pickle 
+import joblib
 
 import numpy as np
 import pandas as pd
@@ -443,14 +444,11 @@ def save_model(model, filepath='classifier.pkl'):
         filepath (str): Specified filename and path to save the ML model.
     """
     try:
-        # Export the model using pickle
-        with open(filepath, 'wb') as model_file:
-            pickle.dump(model, model_file)
-
+        # Export the model using joblib
+        joblib.dump(model, filepath)
         print("Model exported successfully!")
     except Exception as e:
         print(f"Error saving model: {e}")
-
 
 def build_model():
     """
