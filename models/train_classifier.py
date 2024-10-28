@@ -370,55 +370,44 @@ def model_evaluator(model, x_test, y_test, class_names):
     return y_pred, metrics_df
 
 
-# def build_model():
-#     """
-#     Constructs an ML pipeline using FeatureUnion to add a new binary feature.
-#     The feature checks if the first word in each text is a verb (1 if a verb, 0 otherwise),
-#     and combines this feature with the text data processed through a TF-IDF transformer pipeline.
-#     The combined feature matrix is used to train the model to enhance its performance.
-
-#     Returns:
-#         model (Pipeline): A scikit-learn pipeline object for training and evaluation, 
-#         which includes feature extraction, transformation, and a classifier.
-#     """
-    
-#     text_pipeline = Pipeline([
-#         ("vect", CountVectorizer(tokenizer=tokenize)),
-#         ("tfidf", TfidfTransformer())
-#     ])
-    
-#     features = FeatureUnion([
-#         ("text_pipeline",text_pipeline),
-#         ("starting_verb", StartingVerbExtractor())
-#     ])
-    
-#     model = Pipeline([
-#         ("features", features),
-#         ("clf", MultiOutputClassifier(RandomForestClassifier()))
-#     ])
-    
-#     # specify parameters for grid search
-#     parameters = {
-#         'features__text_pipeline__vect__ngram_range': [(1, 2)],
-#         'clf__estimator__n_estimators': [200],
-#         'clf__estimator__min_samples_split': [2]
-#     }
-    
-#     # create grid search object
-#     cv = GridSearchCV(estimator=model, param_grid=parameters, verbose=2, cv=3, error_score='raise')
-    
-#     return cv
-
-
 def build_model():
-    """ 
     """
-    model = Pipeline([
-        ("vectorize", CountVectorizer(tokenizer=tokenize)),
-        ("tfidf", TfidfTransformer()),
-        ("clf", RandomForestClassifier())
+    Constructs an ML pipeline using FeatureUnion to add a new binary feature.
+    The feature checks if the first word in each text is a verb (1 if a verb, 0 otherwise),
+    and combines this feature with the text data processed through a TF-IDF transformer pipeline.
+    The combined feature matrix is used to train the model to enhance its performance.
+
+    Returns:
+        model (Pipeline): A scikit-learn pipeline object for training and evaluation, 
+        which includes feature extraction, transformation, and a classifier.
+    """
+    
+    text_pipeline = Pipeline([
+        ("vect", CountVectorizer(tokenizer=tokenize)),
+        ("tfidf", TfidfTransformer())
     ])
-    return model
+    
+    features = FeatureUnion([
+        ("text_pipeline",text_pipeline),
+        ("starting_verb", StartingVerbExtractor())
+    ])
+    
+    model = Pipeline([
+        ("features", features),
+        ("clf", MultiOutputClassifier(RandomForestClassifier()))
+    ])
+    
+    # specify parameters for grid search
+    parameters = {
+        'features__text_pipeline__vect__ngram_range': [(1, 2)],
+        'clf__estimator__n_estimators': [200],
+        'clf__estimator__min_samples_split': [2]
+    }
+    
+    # create grid search object
+    cv = GridSearchCV(estimator=model, param_grid=parameters, verbose=2, cv=3, error_score='raise')
+    
+    return cv
 
 
 def save_model(model, filepath, overwrite=True):
