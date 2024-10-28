@@ -7,10 +7,6 @@ import dill
 import nltk
 import pandas as pd
 
-# from nltk.stem import WordNetLemmatizer
-# from nltk.tokenize import word_tokenize
-# nltk.download('stopwords', quiet=True)
-
 from nltk.corpus import stopwords
 from flask import Flask
 from flask import render_template, request, jsonify
@@ -30,39 +26,12 @@ app = Flask(__name__)
 # Use os.path.join for portable paths
 database_filepath = os.path.join('data', 'DisasterResponse.db')
 model_filepath = os.path.join('models', 'classifier.pkl')
-# model_filepath = os.path.join('workspace', 'mock-classifier.pkl')
-
-
-
-# def tokenize(text):
-#     tokens = word_tokenize(text)
-#     lemmatizer = WordNetLemmatizer()
-
-#     clean_tokens = []
-#     for tok in tokens:
-#         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-#         clean_tokens.append(clean_tok)
-
-#     return clean_tokens
 
 # load data
 engine = create_engine(f'sqlite:///{database_filepath}')
 df = pd.read_sql_table('cleandata', engine)
 
-print("started loading model")
-# load model
-# model = joblib.load(model_filepath)
-print(os.getcwd())
-print(model_filepath)
-
-
-        
 model = load_model(model_filepath)
-
-print(model)
-
-print("done loading model")
-
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
@@ -184,9 +153,6 @@ def go():
         classification_result=classification_results
     )
 
-
-# def main():
-#     app.run(host='0.0.0.0', port=3001, debug=True)
 
 def main():
     # Get port from environment variable or default to 3001
