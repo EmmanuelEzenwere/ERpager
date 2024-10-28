@@ -27,4 +27,6 @@ __pycache__/
 # Virtual Environment
 venv/
 env/
-ENV/
+ENV/*.pyc
+__pycache__/
+myenv/ # Also ignore the virtual environment
