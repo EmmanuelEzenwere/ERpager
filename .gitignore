@@ -30,3 +30,5 @@ env/
 ENV/*.pyc
 __pycache__/
 myenv/ # Also ignore the virtual environment
+.DS_Store
+**/.DS_Store
