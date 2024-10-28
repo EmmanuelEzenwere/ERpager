@@ -3,29 +3,36 @@ import os
 import sys
 import json
 import plotly
-import joblib
-
+import dill
+import nltk
 import pandas as pd
 
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
+# from nltk.stem import WordNetLemmatizer
+# from nltk.tokenize import word_tokenize
+# nltk.download('stopwords', quiet=True)
+
+from nltk.corpus import stopwords
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar, Scatter, Pie
 from sqlalchemy import create_engine
 
-
 # # Set up project path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
 
-from models.train_classifier import StartingVerbExtractor
+# from models.train_classifier import StartingVerbExtractor
+from models.train_classifier import load_model
+from models.tokenizer import tokenize
 
 app = Flask(__name__)
 
 # Use os.path.join for portable paths
 database_filepath = os.path.join('data', 'DisasterResponse.db')
 model_filepath = os.path.join('models', 'classifier.pkl')
+# model_filepath = os.path.join('workspace', 'mock-classifier.pkl')
+
+
 
 # def tokenize(text):
 #     tokens = word_tokenize(text)
@@ -42,10 +49,19 @@ model_filepath = os.path.join('models', 'classifier.pkl')
 engine = create_engine(f'sqlite:///{database_filepath}')
 df = pd.read_sql_table('cleandata', engine)
 
+print("started loading model")
 # load model
-model = joblib.load(model_filepath)
+# model = joblib.load(model_filepath)
+print(os.getcwd())
+print(model_filepath)
 
 
+        
+model = load_model(model_filepath)
+
+print(model)
+
+print("done loading model")
 
 
 # index webpage displays cool visuals and receives user input text for model

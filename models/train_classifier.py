@@ -4,7 +4,8 @@ import sklearn
 import nltk
 import re
 import pickle 
-import joblib
+import dill
+import os
 
 import numpy as np
 import pandas as pd
@@ -13,41 +14,23 @@ from sqlalchemy import create_engine
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfTransformer, TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, precision_score, recall_score, f1_score
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.multioutput import MultiOutputClassifier
-
-#help(sklearn.multioutput)
-# help(sklearn)
-
 from sklearn.base import BaseEstimator
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import FeatureUnion,Pipeline
 
-
-#help(sklearn.metrics)
-#help(sklearn.multioutput)
-
-# Download the stopwords and all nltk relevant packages.
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('averaged_perceptron_tagger_eng')
-nltk.download('punkt_tab')
-
-stop_words = set(stopwords.words("english"))
-
+# Add the project root directory to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from models.tokenizer import tokenize  
 
 def load_data(
-    database_path="../data/DisasterResponse.db",
+    database_path,
     x_column_name = "message", 
     y_start=4, 
     y_stop=None, 
@@ -87,54 +70,6 @@ def load_data(
     classes = list(y.columns)
     return X.values, y.values, classes
 
-
-def tokenize(text, stop_words=None):
-    """
-    Tokenize a text by normalizing, lemmatizing and removing stop words.
-    
-    Args:
-        text (list): list of strings
-        stop_words (set): a set of word strings for stop words -- optional.
-
-    Returns:
-        tokens(list): list of token strings.
-    """
-    # Import stopwords if not imported.
-    if stop_words is None:
-        stop_words = set(stopwords.words("english"))
-    
-    lemmatizer = WordNetLemmatizer()    
-    
-    url_regex = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-    
-    # Replace URLs with a placeholder and normalize case.
-    normalized_text = re.sub(url_regex, ' ', text.lower())
-
-    # Replace non-alphanumeric characters with spaces.
-    normalized_text = re.sub(r'[^a-zA-Z0-9]', ' ', normalized_text)
-    
-    tokens = word_tokenize(normalized_text)
-        
-    # Lemmatize with POS tagging
-    clean_tokens = []
-    for token in tokens:
-        if token not in stop_words:
-            pos_tag = nltk.pos_tag([token])[0][1]
-            
-            # Special handling for adverbs ending in 'ly'
-            if pos_tag.startswith('RB') and token.endswith('ly'):
-                base_form = token[:-2]  # Remove 'ly'
-                clean_token = lemmatizer.lemmatize(base_form, pos='a')
-            elif pos_tag.startswith('VB'):
-                clean_token = lemmatizer.lemmatize(token, pos='v')
-            elif pos_tag.startswith('JJ'):
-                clean_token = lemmatizer.lemmatize(token, pos='a')
-            else:
-                clean_token = lemmatizer.lemmatize(token, pos='n')
-            
-            clean_tokens.append(clean_token)
-    
-    return clean_tokens
 
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
     
@@ -435,60 +370,86 @@ def model_evaluator(model, x_test, y_test, class_names):
     return y_pred, metrics_df
 
 
-def save_model(model, filepath='classifier.pkl'):
-    """
-    Saves the fitted ML model as a pickle file in the current directory.
+# def build_model():
+#     """
+#     Constructs an ML pipeline using FeatureUnion to add a new binary feature.
+#     The feature checks if the first word in each text is a verb (1 if a verb, 0 otherwise),
+#     and combines this feature with the text data processed through a TF-IDF transformer pipeline.
+#     The combined feature matrix is used to train the model to enhance its performance.
 
-    Args:
-        model (pipeline or GridSearchCV object): The ML model to be saved.
-        filepath (str): Specified filename and path to save the ML model.
-    """
-    try:
-        # Export the model using joblib
-        joblib.dump(model, filepath)
-        print("Model exported successfully!")
-    except Exception as e:
-        print(f"Error saving model: {e}")
+#     Returns:
+#         model (Pipeline): A scikit-learn pipeline object for training and evaluation, 
+#         which includes feature extraction, transformation, and a classifier.
+#     """
+    
+#     text_pipeline = Pipeline([
+#         ("vect", CountVectorizer(tokenizer=tokenize)),
+#         ("tfidf", TfidfTransformer())
+#     ])
+    
+#     features = FeatureUnion([
+#         ("text_pipeline",text_pipeline),
+#         ("starting_verb", StartingVerbExtractor())
+#     ])
+    
+#     model = Pipeline([
+#         ("features", features),
+#         ("clf", MultiOutputClassifier(RandomForestClassifier()))
+#     ])
+    
+#     # specify parameters for grid search
+#     parameters = {
+#         'features__text_pipeline__vect__ngram_range': [(1, 2)],
+#         'clf__estimator__n_estimators': [200],
+#         'clf__estimator__min_samples_split': [2]
+#     }
+    
+#     # create grid search object
+#     cv = GridSearchCV(estimator=model, param_grid=parameters, verbose=2, cv=3, error_score='raise')
+    
+#     return cv
+
 
 def build_model():
+    """ 
     """
-    Constructs an ML pipeline using FeatureUnion to add a new binary feature.
-    The feature checks if the first word in each text is a verb (1 if a verb, 0 otherwise),
-    and combines this feature with the text data processed through a TF-IDF transformer pipeline.
-    The combined feature matrix is used to train the model to enhance its performance.
-
-    Returns:
-        model (Pipeline): A scikit-learn pipeline object for training and evaluation, 
-        which includes feature extraction, transformation, and a classifier.
-    """
-    
-    text_pipeline = Pipeline([
-        ("vect", CountVectorizer(tokenizer=tokenize)),
-        ("tfidf", TfidfTransformer())
-    ])
-    
-    features = FeatureUnion([
-        ("text_pipeline",text_pipeline),
-        ("starting_verb", StartingVerbExtractor())
-    ])
-    
     model = Pipeline([
-        ("features", features),
-        ("clf", MultiOutputClassifier(RandomForestClassifier()))
+        ("vectorize", CountVectorizer(tokenizer=tokenize)),
+        ("tfidf", TfidfTransformer()),
+        ("clf", RandomForestClassifier())
     ])
-    
-    # specify parameters for grid search
-    parameters = {
-        'features__text_pipeline__vect__ngram_range': [(1, 2)],
-        'clf__estimator__n_estimators': [200],
-        'clf__estimator__min_samples_split': [2]
-    }
-    
-    # create grid search object
-    cv = GridSearchCV(estimator=model, param_grid=parameters, verbose=2, cv=3, error_score='raise')
-    
-    return cv
+    return model
 
+
+def save_model(model, filepath, overwrite=True):
+    """Save ML model using dill"""
+    try:
+        if not overwrite and os.path.exists(filepath):
+            raise FileExistsError(f"File {filepath} already exists and overwrite=False")
+            
+        with open(filepath, 'wb') as f:
+            dill.dump(model, f)
+        print(f"Model saved successfully as {filepath}")
+        
+    except Exception as e:
+        print(f"Error saving model: {e}")
+        
+        
+def load_model(filepath):
+    """Load ML model using dill"""
+    try:
+        # Configure dill for compatibility
+        dill._dill._reverse_typemap['ObjectType'] = object
+        
+        with open(filepath, 'rb') as f:
+            model = dill.load(f)
+        print(f"Model loaded successfully from {filepath}")
+        return model
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        return None
+    
+    
 def main():
     """
     ML model run script.
